@@ -13,25 +13,14 @@ function filter(array, value, key) {
   );
 }
 const lastArg = args[args.length - 1];
-console.log(lastArg);
 const actorD = game.actors.get(args[0].actor._id);
-console.log("actorD: ", actorD);
 const tokenD = canvas.tokens.get(args[0].tokenId);
-console.log("tokenD: ", tokenD);
-// let target = await fromUuid(args[0].hitTargetUuids[0] ?? "");
 let target = lastArg.targets;
 const ttarget = canvas.tokens.get(lastArg.targets[0].id);
-console.log("target: ", target);
-console.log("ttarget: ", ttarget);
 let uuid = target[0].uuid;
 let targetSize = target[0]._actor.data.data.traits.size;
-console.log("targetSize: ", targetSize);
-
 let targetCondition = target[0].data.actorData.effects;
-
 let grappled = filter(targetCondition, "Grappled");
-
-console.log("grappled: ", grappled);
 let actionName = "Grapple";
 let itemDescription =
   "<p>When you want to grab a creature or wrestle with it, you can use the Attack action to make a Special melee Attack, a grapple. If you’re able to make multiple attacks with the Attack action, this Attack replaces one of them.</p><p>The target of your grapple must be no more than one size larger than you and must be within your reach. Using at least one free hand, you try to seize the target by making a grapple check instead of an Attack roll: a Strength (Athletics) check contested by the target’s Strength (Athletics) or Dexterity (Acrobatics) check (the target chooses the ability to use). If you succeed, you subject the target to the Grappled condition (see Conditions ). The condition specifies the things that end it, and you can release the target whenever you like (no action required).</p>";
@@ -40,25 +29,8 @@ if (targetSize === "grg") {
   return;
 }
 if (grappled[0]?.label === "Grappled") {
-  ui.notifications.info("Crushing " + `${target[0].data.name}`);
-  let damageRoll = await new Roll(
-    `2d6[bludgeoning] ${graspScale} + ${summonerMod}`
-  ).evaluate();
-  console.log(damageRoll.total);
-  new MidiQOL.DamageOnlyWorkflow(
-    actorD,
-    ttarget,
-    damageRoll.total,
-    "bludgeoning",
-    [ttarget],
-    damageRoll,
-    {
-      flavor: `${target[0].data.name} is crushed`,
-      itemData: item?.toObject(),
-      itemCardId: "new",
-      useOther: true,
-    }
-  );
+  ui.notifications.info(`${target[0].data.name} already grappled!`);
+  return;
 } else {
   let bigbySkill = "ath";
   let targetSkill =
@@ -102,13 +74,12 @@ async function midiExec(actionName, itemDescription, bigbyRoll, targetRoll) {
     : "";
   game.dice3d?.showForRoll(bigbyRoll);
   game.dice3d?.showForRoll(targetRoll);
-  let playerWin = "";
+  let bigbyWin = "";
   let targetWin = "";
   bigbyRoll.total >= targetRoll.total
-    ? (playerWin = `success`)
+    ? (bigbyWin = `success`)
     : (targetWin = `success`);
-  console.log("playerWin: ", playerWin);
-  if (playerWin === "success") {
+  if (bigbyWin === "success") {
     game.dfreds.effectInterface.addEffect({ effectName: "Grappled", uuid });
   }
   let damage_results = `
@@ -130,7 +101,7 @@ async function midiExec(actionName, itemDescription, bigbyRoll, targetRoll) {
                 </header>
               </div>
             </div>
-            <h4 class="dice-total ${playerWin}">${bigbyRoll.total}</h4>
+            <h4 class="dice-total ${bigbyWin}">${bigbyRoll.total}</h4>
           </div>
         </div>
       </div>
@@ -151,7 +122,6 @@ async function midiExec(actionName, itemDescription, bigbyRoll, targetRoll) {
           </div>
         </div>
       </div>
-
     </div>`;
   const chatMessage = game.messages.get(lastArg.itemCardId);
   let content = duplicate(chatMessage.data.content);
