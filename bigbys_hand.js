@@ -22,8 +22,6 @@ if (level - 5 > 0) {
   graspScale = ` + ${(level - 5) * 2}d6[bludgeoning]`;
 }
 
-console.log("fistScale: ", fistScale);
-console.log("graspScale: ", graspScale);
 let choice = await new Promise((resolve) => {
   new Dialog({
     title: "Choose your color:",
@@ -96,7 +94,7 @@ let updates = {
       },
       "Grasping Hand (Crush)": {
         "data.damage.parts": [
-          [`2d6[bludgeoning] ${graspScale}`, "bludgeoning"],
+          [`2d6[bludgeoning] + ${summonerMod} ${graspScale}`, "bludgeoning"],
         ],
       },
     },
